@@ -24,15 +24,20 @@ app.get("/api/users", (req, res) => {
         })
 })
 
-// GET USER BY ID - 
+// GET USER BY ID - COMPLETED
 app.get("/api/users/:id", (req, res) => {
     //req.params.id accesses the id from the route
+
     db.findById(req.params.id)
         .then(data =>{
-            return res.status(200).json(` ${data} users were deleted`)
+            if (!data) {
+                return res.status(404).json({ message: "The user with the specified ID does not exist." })
+            } else{
+            return res.status(200).json(data)
+            }
         })
         .catch(err => {
-            return res.status(404).json({message: "The user with the specified ID does not exist." })
+            return res.status(500).json({errorMessage: "The user information could not be retrieved."})
         })
     
 })
@@ -42,20 +47,24 @@ app.get("/api/users/:id", (req, res) => {
 app.delete("/api/users/:id", (req, res) => {
     db.remove(req.params.id)
         .then(data =>{
-            return res.status(200).json(data)
-        })
-        .catch(err =>{
-            if(user) {
+            if(!data) {
                 return res.status(404).json({ message: "The user with the specified ID does not exist." })
-            } else {
+            } else if(res === 1) {
+                db.findById(req.params.id)
+                    .then(data=>{
+                        return res.status(200).json(data)
+                    })
+                    .catch(err =>{
+                        return res.status(500).json( {errorMessage: "The user could not be removed"})
+                    })
+            }})
+        .catch(err =>{
                 return res.status(500).json( {errorMessage: "The user could not be removed"})
-            }
-            
         })
 })
 
 
-//Post Request - COMPLETE
+//CREATE USER - COMPLETE
 
 app.post("/api/users", (req, res) =>{
     if (!req.body.name || !req.body.bio) {
@@ -73,6 +82,12 @@ app.post("/api/users", (req, res) =>{
         .catch(err =>{
             return res.status(500).json({errorMessage: "There was an error while saving the user to the database" })
         })
+    
+})
+
+// UPDATE USER 
+
+app.put("/api/users/:id", (req, res) =>{
     
 })
 
