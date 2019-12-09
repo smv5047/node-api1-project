@@ -45,23 +45,37 @@ app.get("/api/users/:id", (req, res) => {
 //DELETE USER BY ID 
 
 app.delete("/api/users/:id", (req, res) => {
-    db.remove(req.params.id)
-        .then(data =>{
-            if(!data) {
-                return res.status(404).json({ message: "The user with the specified ID does not exist." })
-            } else if(res === 1) {
-                db.findById(req.params.id)
-                    .then(data=>{
-                        return res.status(200).json(data)
-                    })
-                    .catch(err =>{
-                        return res.status(500).json( {errorMessage: "The user could not be removed"})
-                    })
-            }})
-        .catch(err =>{
-                return res.status(500).json( {errorMessage: "The user could not be removed"})
+    // db.remove(req.params.id)
+    //     .then(data =>{
+    //         if(!data) {
+    //             return res.status(404).json({ message: "The user with the specified ID does not exist." })
+    //         } else if(res === 1) {
+    //             db.findById(req.params.id)
+    //                 .then(data=>{
+    //                     return res.status(200).json(data)
+    //                 })
+    //                 .catch(err =>{
+    //                     return res.status(500).json( {errorMessage: "The user could not be removed"})
+    //                 })
+    //         }})
+    //     .catch(err =>{
+    //             return res.status(500).json( {errorMessage: "The user could not be removed"})
+    //     })
+    db.findById(req.params.id)
+        .then(user => {
+            if(user) {
+                return db.remove(req.params.id).then(()=>user)
+            }
+            res.status(404).json({error: "The user with the specified ID does not exist"})
+        })
+        .then(data => res.json(data))
+        .catch(err => {
+            res.status(500).json({error: "The user could not be removed"})
         })
 })
+
+
+//View updated screenshot on Desktop
 
 
 //CREATE USER - COMPLETE
@@ -89,11 +103,37 @@ app.post("/api/users", (req, res) =>{
 
 app.put("/api/users/:id", (req, res) =>{
     
+
+    if (!req.body.name && !req.body.bio) {
+        return res.status(400).json({errorMessage: "Please provide name and bio for the user." })
+    }
+
+    db.update(req.params.id, {
+        name: req.body.name,
+        bio: req.body.bio
+    })
+        .then(data =>{
+            if(!data) {
+                return res.status(404).json({ message: "The user with the specified ID does not exist." })
+            } else if (!req.body.name || !req.body.bio) {
+                return res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
+            } else {
+
+            }
+        })
+        .catch(err =>{
+            return res.status(500).json({errorMessage: "The user information could not be modified."})
+        })
+
+        //per Jason notes check screenshot on desktop
+        //also async await
+       
+
 })
 
 
 //Express Server Setup - COMPLETE
-const port = 8000
+const port = 8001
 const host = "127.0.0.1" 
 
 app.listen(port, host, ()=>{
