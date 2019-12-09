@@ -101,29 +101,46 @@ app.post("/api/users", (req, res) =>{
 
 // UPDATE USER 
 
-app.put("/api/users/:id", (req, res) =>{
-    
-
-    if (!req.body.name && !req.body.bio) {
-        return res.status(400).json({errorMessage: "Please provide name and bio for the user." })
+app.put("/api/users/:id", async (req, res) =>{
+    const {name, bio } = req.body
+    if (!name || !bio) {
+        return res.status(400).json({error: "Please provide name and bio for the user"})
     }
 
-    db.update(req.params.id, {
-        name: req.body.name,
-        bio: req.body.bio
-    })
-        .then(data =>{
-            if(!data) {
-                return res.status(404).json({ message: "The user with the specified ID does not exist." })
-            } else if (!req.body.name || !req.body.bio) {
-                return res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
-            } else {
-
+    db.findById(req.params.id)
+        .then(user => {
+            if(user) {
+                return db.update(req.params.id, {name, bio})
             }
+            res.status(404).json({error: "The user with the specified ID does not exist"})
         })
-        .catch(err =>{
-            return res.status(500).json({errorMessage: "The user information could not be modified."})
+        .then(() => db.findById(req.params.id))
+        .then(data => res.json(data))
+        .catch(err => {
+            res.status(500).json({error: "The user information could not be modified"})
         })
+
+        
+    // if (!req.body.name && !req.body.bio) {
+    //     return res.status(400).json({errorMessage: "Please provide name and bio for the user." })
+    // }
+
+    // db.update(req.params.id, {
+    //     name: req.body.name,
+    //     bio: req.body.bio
+    // })
+    //     .then(data =>{
+    //         if(!data) {
+    //             return res.status(404).json({ message: "The user with the specified ID does not exist." })
+    //         } else if (!req.body.name || !req.body.bio) {
+    //             return res.status(400).json({ errorMessage: "Please provide name and bio for the user." })
+    //         } else {
+
+    //         }
+    //     })
+    //     .catch(err =>{
+    //         return res.status(500).json({errorMessage: "The user information could not be modified."})
+    //     })
 
         //per Jason notes check screenshot on desktop
         //also async await
